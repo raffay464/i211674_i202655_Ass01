@@ -42,26 +42,25 @@ pipeline {
     post {
         always {
             script {
-                echo "📩 Attempting to send email notification..."
-                try {
-                    emailext(
-                        subject: '🚀 Deployment Status: ${currentBuild.currentResult}',
-                        body: '''
-                        <p><strong>Pipeline Result:</strong> ${currentBuild.currentResult}</p>
-                        <ul>
-                            <li>✅ Repository: <a href="https://github.com/ahmadusama974/i211674_i202655_Ass01">GitHub Repo</a></li>
-                            <li>✅ Docker Hub: <a href="https://hub.docker.com/repository/docker/ahmadusama20i2655/flask-ml-app">View Image</a></li>
-                        </ul>
-                        <p>Regards,<br>Jenkins CI/CD</p>
-                        ''',
-                        mimeType: 'text/html',
-                        to: 'agkraffay01@gmail.com'
-                    )
-                } catch (Exception e) {
-                    echo "⚠️ Email sending failed: ${e.getMessage()}"
-                }
+                def BUILD_STATUS = currentBuild.currentResult ?: 'UNKNOWN'
+                echo "Sending email notification... (Status: ${BUILD_STATUS})"
+
+                emailext(
+                    subject: "Jenkins Build: ${BUILD_STATUS}",
+                    body: """
+                    <p><strong>Pipeline Status:</strong> ${BUILD_STATUS}</p>
+                    <ul>
+                        <li>✅ <a href="https://github.com/ahmadusama974/i211674_i202655_Ass01">GitHub Repo</a></li>
+                        <li>✅ <a href="https://hub.docker.com/repository/docker/ahmadusama20i2655/flask-ml-app">Docker Hub Image</a></li>
+                    </ul>
+                    <p>Regards,<br>Jenkins CI/CD</p>
+                    """,
+                    mimeType: 'text/html',
+                    to: 'agkraffay01@gmail.com'
+                )
             }
         }
     }
+
 
 }
