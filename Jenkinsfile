@@ -8,26 +8,32 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: "${env.BRANCH_NAME}", url: 'https://github.com/ahmadusama974/i211674_i202655_Ass01.git'
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "${env.BRANCH_NAME}"]],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/ahmadusama974/i211674_i202655_Ass01.git'
+                    ]]
+                ])
             }
         }
 
         stage('Run Tests') {
             when {
-                branch 'test'  // Only run tests on the test branch
+                expression { env.BRANCH_NAME == 'test' }
             }
             steps {
                 sh '''
                 python -m pip install --upgrade pip
                 pip install -r requirements.txt
-                pytest
+                pytest test.py  # Run test.py explicitly
                 '''
             }
         }
 
         stage('Build & Push Docker Image') {
             when {
-                branch 'main'  // Only deploy if code is in main
+                expression { env.BRANCH_NAME == 'main' }
             }
             steps {
                 script {
