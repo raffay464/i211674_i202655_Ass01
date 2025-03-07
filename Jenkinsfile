@@ -20,8 +20,8 @@ pipeline {
 
         stage('Build & Push Docker Image') {
             when {
-                branch 'main'  // Only runs when code is merged into main
-            }
+                expression { env.GIT_BRANCH.endsWith('main') }
+                }
             steps {
                 script {
                     echo "Building Docker image..."
