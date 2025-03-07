@@ -25,7 +25,7 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker image..."
-                    sh 'docker build -t $DOCKER_IMAGE .'
+                    bat 'docker build -t $DOCKER_IMAGE .'
 
                     echo "Pushing Docker image to Docker Hub..."
                     withDockerRegistry([credentialsId: 'docker-hub-credentials', url: '']) {
