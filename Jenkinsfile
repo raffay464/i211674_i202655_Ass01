@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: "${env.BRANCH_NAME}", url: 'https://github.com/raffay464/i211674_i202655_Ass01.git'
+                git branch: "${env.BRANCH_NAME}", url: 'https://github.com/ahmadusama974/i211674_i202655_Ass01.git'
             }
         }
 
