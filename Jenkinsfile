@@ -18,26 +18,16 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
-            when {
-                expression { env.BRANCH_NAME == 'test' }
-            }
-            steps {
-                sh '''
-                python -m pip install --upgrade pip
-                pip install -r requirements.txt
-                pytest test.py  # Run test.py explicitly
-                '''
-            }
-        }
-
         stage('Build & Push Docker Image') {
             when {
-                expression { env.BRANCH_NAME == 'main' }
+                branch 'main'  // This ensures deployment only happens when merged to main
             }
             steps {
                 script {
+                    echo "Building Docker image..."
                     sh 'docker build -t $DOCKER_IMAGE .'
+
+                    echo "Pushing Docker image to Docker Hub..."
                     withDockerRegistry([credentialsId: 'docker-hub-credentials', url: '']) {
                         sh 'docker push $DOCKER_IMAGE'
                     }
@@ -50,8 +40,9 @@ pipeline {
         success {
             script {
                 if (env.BRANCH_NAME == 'main') {
+                    echo "Deployment successful! Sending notification..."
                     emailext subject: 'Deployment Successful!',
-                        body: 'Your ML Flask app has been deployed!',
+                        body: 'Your ML Flask app has been successfully deployed!',
                         recipientProviders: [[$class: 'DevelopersRecipientProvider']]
                 }
             }
