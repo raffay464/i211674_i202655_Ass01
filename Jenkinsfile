@@ -20,7 +20,7 @@ pipeline {
 
         stage('Build & Push Docker Image') {
             when {
-                branch 'main'  // This ensures deployment only happens when merged to main
+                branch 'main'  // Only runs when code is merged into main
             }
             steps {
                 script {
@@ -40,10 +40,20 @@ pipeline {
         success {
             script {
                 if (env.BRANCH_NAME == 'main') {
-                    echo "Deployment successful! Sending notification..."
+                    echo "Deployment successful! Sending admin notification..."
+                    
+                    // Email notification to the admin
                     emailext subject: 'Deployment Successful!',
-                        body: 'Your ML Flask app has been successfully deployed!',
-                        recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+                        body: '''
+                        The ML Flask application has been successfully deployed.
+                        
+                        ✅ Repository: https://github.com/ahmadusama974/i211674_i202655_Ass01
+                        ✅ Docker Hub: https://hub.docker.com/repository/docker/ahmadusama20i2655/flask-ml-app
+                        
+                        Regards,
+                        Jenkins CI/CD
+                        ''',
+                        to: 'agkraffay01@gmail.com' 
                 }
             }
         }
