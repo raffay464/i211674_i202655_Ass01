@@ -10,54 +10,54 @@ pipeline {
             steps {
                 checkout([
                     $class: 'GitSCM',
-                     branches: [[name: '*/main']],
+                    branches: [[name: '*/main']],  
                     userRemoteConfigs: [[
                         url: 'https://github.com/ahmadusama974/i211674_i202655_Ass01.git'
                     ]]
                 ])
+                script {
+                    echo "Detected branch: ${env.GIT_BRANCH}"
+                }
             }
         }
 
         stage('Build & Push Docker Image') {
             when {
-                expression { env.GIT_BRANCH.endsWith('main') }
-                }
+                expression { env.GIT_BRANCH.endsWith('main') }  
+            }
             steps {
                 script {
                     echo "Building Docker image..."
-                    bat 'docker build -t $DOCKER_IMAGE .'
-
+                    bat 'docker build -t %DOCKER_IMAGE% .'   //  Fixed variable format
+                    
                     echo "Pushing Docker image to Docker Hub..."
                     withDockerRegistry([credentialsId: 'docker-hub-credentials', url: '']) {
-                        bat 'docker push $DOCKER_IMAGE'
+                        bat 'docker push %DOCKER_IMAGE%'   //  Fixed variable format
                     }
                 }
             }
         }
     }
 
-
     post {
         success {
             script {
-                if (env.BRANCH_NAME == 'main') {
+                if (env.GIT_BRANCH.endsWith('main')) {
                     echo "Deployment successful! Sending admin notification..."
                     
-                    // Email notification to the admin
                     emailext subject: 'Deployment Successful!',
                         body: '''
                         The ML Flask application has been successfully deployed.
-                        
+
                         ✅ Repository: https://github.com/ahmadusama974/i211674_i202655_Ass01
                         ✅ Docker Hub: https://hub.docker.com/repository/docker/ahmadusama20i2655/flask-ml-app
-                        
+
                         Regards,
                         Jenkins CI/CD
                         ''',
-                        to: 'agkraffay01@gmail.com' 
+                        to: 'agkraffay01@gmail.com'
                 }
             }
         }
     }
 }
-
