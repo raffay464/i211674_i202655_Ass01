@@ -40,24 +40,28 @@ pipeline {
     }
 
     post {
-        success {
+        always {
             script {
-                if (env.GIT_BRANCH.endsWith('main')) {
-                    echo "Deployment successful! Sending admin notification..."
-                    
-                    emailext subject: 'Deployment Successful!',
+                echo "📩 Attempting to send email notification..."
+                try {
+                    emailext(
+                        subject: '🚀 Deployment Status: ${currentBuild.currentResult}',
                         body: '''
-                        The ML Flask application has been successfully deployed.
-
-                        ✅ Repository: https://github.com/ahmadusama974/i211674_i202655_Ass01
-                        ✅ Docker Hub: https://hub.docker.com/repository/docker/ahmadusama20i2655/flask-ml-app
-
-                        Regards,
-                        Jenkins CI/CD
+                        <p><strong>Pipeline Result:</strong> ${currentBuild.currentResult}</p>
+                        <ul>
+                            <li>✅ Repository: <a href="https://github.com/ahmadusama974/i211674_i202655_Ass01">GitHub Repo</a></li>
+                            <li>✅ Docker Hub: <a href="https://hub.docker.com/repository/docker/ahmadusama20i2655/flask-ml-app">View Image</a></li>
+                        </ul>
+                        <p>Regards,<br>Jenkins CI/CD</p>
                         ''',
+                        mimeType: 'text/html',
                         to: 'agkraffay01@gmail.com'
+                    )
+                } catch (Exception e) {
+                    echo "⚠️ Email sending failed: ${e.getMessage()}"
                 }
             }
         }
     }
+
 }
