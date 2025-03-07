@@ -10,7 +10,7 @@ pipeline {
             steps {
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: "${env.BRANCH_NAME}"]],
+                     branches: [[name: '*/main']],
                     userRemoteConfigs: [[
                         url: 'https://github.com/ahmadusama974/i211674_i202655_Ass01.git'
                     ]]
@@ -35,7 +35,7 @@ pipeline {
             }
         }
     }
-    
+
 
     post {
         success {
