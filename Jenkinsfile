@@ -29,7 +29,7 @@ pipeline {
 
                     echo "Pushing Docker image to Docker Hub..."
                     withDockerRegistry([credentialsId: 'docker-hub-credentials', url: '']) {
-                        sh 'docker push $DOCKER_IMAGE'
+                        bat 'docker push $DOCKER_IMAGE'
                     }
                 }
             }
