@@ -8,32 +8,31 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: "${env.BRANCH_NAME}", url: 'https://github.com/raffay464/i211674_i202655_Ass01.git'
-            }
-        }
-
-        stage('Run Tests') {
-            when {
-                branch 'test'  // Only run tests on the test branch
-            }
-            steps {
-                sh '''
-                python -m pip install --upgrade pip
-                pip install -r requirements.txt
-                pytest
-                '''
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],  
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/ahmadusama974/i211674_i202655_Ass01.git'
+                    ]]
+                ])
+                script {
+                    echo "Detected branch: ${env.GIT_BRANCH}"
+                }
             }
         }
 
         stage('Build & Push Docker Image') {
             when {
-                branch 'main'  // Only deploy if code is in main
+                expression { env.GIT_BRANCH.endsWith('main') }  
             }
             steps {
                 script {
-                    sh 'docker build -t $DOCKER_IMAGE .'
+                    echo "Building Docker image..."
+                    bat 'docker build -t %DOCKER_IMAGE% .'   //  Fixed variable format
+                    
+                    echo "Pushing Docker image to Docker Hub..."
                     withDockerRegistry([credentialsId: 'docker-hub-credentials', url: '']) {
-                        sh 'docker push $DOCKER_IMAGE'
+                        bat 'docker push %DOCKER_IMAGE%'   //  Fixed variable format
                     }
                 }
             }
@@ -41,14 +40,27 @@ pipeline {
     }
 
     post {
-        success {
+        always {
             script {
-                if (env.BRANCH_NAME == 'main') {
-                    emailext subject: 'Deployment Successful!',
-                        body: 'Your ML Flask app has been deployed!',
-                        recipientProviders: [[$class: 'DevelopersRecipientProvider']]
-                }
+                def BUILD_STATUS = currentBuild.currentResult ?: 'UNKNOWN'
+                echo "Sending email notification... (Status: ${BUILD_STATUS})"
+
+                emailext(
+                    subject: "Jenkins Build: ${BUILD_STATUS}",
+                    body: """
+                    <p><strong>Pipeline Status:</strong> ${BUILD_STATUS}</p>
+                    <ul>
+                        <li>✅ <a href="https://github.com/ahmadusama974/i211674_i202655_Ass01">GitHub Repo</a></li>
+                        <li>✅ <a href="https://hub.docker.com/repository/docker/ahmadusama20i2655/flask-ml-app">Docker Hub Image</a></li>
+                    </ul>
+                    <p>Regards,<br>Jenkins CI/CD</p>
+                    """,
+                    mimeType: 'text/html',
+                    to: 'agkraffay01@gmail.com'
+                )
             }
         }
     }
+
+
 }
